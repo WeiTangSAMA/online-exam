@@ -84,9 +84,6 @@ public class PaperServiceImpl implements PaperService {
 
         // 如果传了题目，重新绑定
         if (paperDTO.getQuestionIds() != null) {
-            // 先删除旧的关联
-            paperQuestionMapper.delete(new LambdaQueryWrapper<PaperQuestion>()
-                    .eq(PaperQuestion::getPaperId, paperDTO.getId()));
             bindQuestions(paperDTO.getId(), paperDTO.getQuestionIds());
         }
     }
@@ -94,20 +91,22 @@ public class PaperServiceImpl implements PaperService {
     @Override
     @Transactional
     public void bindQuestions(Long paperId, List<Long> questionIds) {
-        if (questionIds == null || questionIds.isEmpty()) {
-            return;
-        }
-        List<PaperQuestion> list = new ArrayList<>();
-        for (int i = 0; i < questionIds.size(); i++) {
-            PaperQuestion pq = new PaperQuestion();
-            pq.setPaperId(paperId);
-            pq.setQuestionId(questionIds.get(i));
-            pq.setSortOrder(i + 1);
-            list.add(pq);
-        }
-        // 批量插入
-        for (PaperQuestion pq : list) {
-            paperQuestionMapper.insert(pq);
+        paperQuestionMapper.delete(new LambdaQueryWrapper<PaperQuestion>()
+                .eq(PaperQuestion::getPaperId, paperId));
+
+        if (questionIds != null && !questionIds.isEmpty()) {
+            List<PaperQuestion> list = new ArrayList<>();
+            for (int i = 0; i < questionIds.size(); i++) {
+                PaperQuestion pq = new PaperQuestion();
+                pq.setPaperId(paperId);
+                pq.setQuestionId(questionIds.get(i));
+                pq.setSortOrder(i + 1);
+                list.add(pq);
+            }
+            // 批量插入
+            for (PaperQuestion pq : list) {
+                paperQuestionMapper.insert(pq);
+            }
         }
 
         // 更新试卷总分
