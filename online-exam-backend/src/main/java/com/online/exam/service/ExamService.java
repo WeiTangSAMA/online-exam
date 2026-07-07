@@ -16,5 +16,5 @@ public interface ExamService {
     ExamPaperVO getExamPaper(Long paperId);
 
     /** 查看答题详情 */
-    ScoreDetailVO getExamDetail(Long recordId, Long userId);
+    ScoreDetailVO getExamDetail(Long recordId, Long userId, boolean canViewAll);
 }

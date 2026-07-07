@@ -3,6 +3,7 @@ package com.online.exam.controller;
 import com.online.exam.common.Result;
 import com.online.exam.dto.SubmitExamDTO;
 import com.online.exam.security.SecurityUtils;
+import com.online.exam.security.SecurityUser;
 import com.online.exam.service.ExamService;
 import com.online.exam.vo.ExamPaperVO;
 import com.online.exam.vo.ScoreDetailVO;
@@ -43,6 +44,10 @@ public class ExamController {
     @Operation(summary = "查看答题详情")
     @GetMapping("/detail/{recordId}")
     public Result<ScoreDetailVO> detail(@PathVariable Long recordId) {
-        return Result.success(examService.getExamDetail(recordId, SecurityUtils.getCurrentUserId()));
+        SecurityUser currentUser = SecurityUtils.getCurrentUser();
+        boolean canViewAll = currentUser.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority())
+                        || "ROLE_TEACHER".equals(authority.getAuthority()));
+        return Result.success(examService.getExamDetail(recordId, currentUser.getId(), canViewAll));
     }
 }

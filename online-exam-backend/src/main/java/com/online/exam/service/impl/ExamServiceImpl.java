@@ -74,7 +74,7 @@ public class ExamServiceImpl implements ExamService {
         if (!record.getUserId().equals(userId)) {
             throw new BusinessException("无权操作该考试记录");
         }
-        if (record.getStatus() == 1) {
+        if (record.getStatus() != 0) {
             throw new BusinessException(ResultCode.EXAM_ALREADY_SUBMITTED);
         }
 
@@ -161,12 +161,12 @@ public class ExamServiceImpl implements ExamService {
     }
 
     @Override
-    public ScoreDetailVO getExamDetail(Long recordId, Long userId) {
+    public ScoreDetailVO getExamDetail(Long recordId, Long userId, boolean canViewAll) {
         ExamRecord record = examRecordMapper.selectById(recordId);
         if (record == null) {
             throw new BusinessException("考试记录不存在");
         }
-        if (!record.getUserId().equals(userId)) {
+        if (!canViewAll && !record.getUserId().equals(userId)) {
             throw new BusinessException("无权查看该考试记录");
         }
 
