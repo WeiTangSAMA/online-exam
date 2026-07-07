@@ -24,7 +24,11 @@ public class ExamController {
     @Operation(summary = "获取考试试卷（不含答案）")
     @GetMapping("/paper/{paperId}")
     public Result<ExamPaperVO> getExamPaper(@PathVariable Long paperId) {
-        return Result.success(examService.getExamPaper(paperId));
+        SecurityUser currentUser = SecurityUtils.getCurrentUser();
+        boolean canViewDraft = currentUser.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority())
+                        || "ROLE_TEACHER".equals(authority.getAuthority()));
+        return Result.success(examService.getExamPaper(paperId, canViewDraft));
     }
 
     @Operation(summary = "开始考试")

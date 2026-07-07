@@ -156,7 +156,14 @@ public class ExamServiceImpl implements ExamService {
     }
 
     @Override
-    public ExamPaperVO getExamPaper(Long paperId) {
+    public ExamPaperVO getExamPaper(Long paperId, boolean canViewDraft) {
+        Paper paper = paperMapper.selectById(paperId);
+        if (paper == null) {
+            throw new BusinessException(ResultCode.PAPER_NOT_FOUND);
+        }
+        if (!canViewDraft && paper.getStatus() != 1) {
+            throw new BusinessException("试卷未发布，无法参加考试");
+        }
         return paperService.getExamPaper(paperId);
     }
 

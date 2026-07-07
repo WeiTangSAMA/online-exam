@@ -13,7 +13,7 @@ public interface ExamService {
     Integer submitExam(Long userId, SubmitExamDTO submitExamDTO);
 
     /** 获取考试试卷（不含答案） */
-    ExamPaperVO getExamPaper(Long paperId);
+    ExamPaperVO getExamPaper(Long paperId, boolean canViewDraft);
 
     /** 查看答题详情 */
     ScoreDetailVO getExamDetail(Long recordId, Long userId, boolean canViewAll);
