@@ -5,10 +5,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.online.exam.common.BusinessException;
 import com.online.exam.dto.QuestionDTO;
 import com.online.exam.entity.Category;
+import com.online.exam.entity.ExamAnswer;
 import com.online.exam.entity.Paper;
 import com.online.exam.entity.PaperQuestion;
 import com.online.exam.entity.Question;
 import com.online.exam.mapper.CategoryMapper;
+import com.online.exam.mapper.ExamAnswerMapper;
 import com.online.exam.mapper.PaperMapper;
 import com.online.exam.mapper.PaperQuestionMapper;
 import com.online.exam.mapper.QuestionMapper;
@@ -34,6 +36,7 @@ public class QuestionServiceImpl implements QuestionService {
     private final CategoryMapper categoryMapper;
     private final PaperQuestionMapper paperQuestionMapper;
     private final PaperMapper paperMapper;
+    private final ExamAnswerMapper examAnswerMapper;
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -93,6 +96,12 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     @Transactional
     public void deleteQuestion(Long id) {
+        Long answerCount = examAnswerMapper.selectCount(new LambdaQueryWrapper<ExamAnswer>()
+                .eq(ExamAnswer::getQuestionId, id));
+        if (answerCount > 0) {
+            throw new BusinessException("题目已有答题记录，无法删除");
+        }
+
         List<Long> affectedPaperIds = paperQuestionMapper.selectList(new LambdaQueryWrapper<PaperQuestion>()
                         .eq(PaperQuestion::getQuestionId, id))
                 .stream()
