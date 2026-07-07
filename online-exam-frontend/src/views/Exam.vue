@@ -88,10 +88,10 @@
 
           <!-- 底部按钮 -->
           <div class="question-footer">
-            <el-button :icon="Left" :disabled="currentIndex === 0" @click="prev">上一题</el-button>
+            <el-button :icon="ArrowLeft" :disabled="currentIndex === 0" @click="prev">上一题</el-button>
             <span class="footer-progress">{{ currentIndex + 1 }} / {{ paperInfo.questions.length }}</span>
             <el-button v-if="currentIndex < paperInfo.questions.length - 1" type="primary" @click="next">
-              下一题 <el-icon class="el-icon--right"><Right /></el-icon>
+              下一题 <el-icon class="el-icon--right"><ArrowRight /></el-icon>
             </el-button>
             <el-button v-else type="success" @click="confirmSubmit">交卷</el-button>
           </div>
@@ -119,7 +119,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Back, Left, Right, AlarmClock } from '@element-plus/icons-vue'
+import { Back, ArrowLeft, ArrowRight, AlarmClock } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getExamPaper, startExam, submitExam } from '../api/exam'
 
