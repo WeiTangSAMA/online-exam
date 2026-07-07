@@ -21,6 +21,7 @@ public class QuestionController {
     private final QuestionService questionService;
 
     @Operation(summary = "分页查询题目")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     @GetMapping
     public Result<Page<QuestionVO>> page(
             @RequestParam(defaultValue = "1") int pageNum,
@@ -32,6 +33,7 @@ public class QuestionController {
     }
 
     @Operation(summary = "根据ID查询题目")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     @GetMapping("/{id}")
     public Result<QuestionVO> get(@PathVariable Long id) {
         return Result.success(questionService.getQuestionById(id));
