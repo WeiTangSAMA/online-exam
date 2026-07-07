@@ -28,6 +28,7 @@ public class ScoreController {
     }
 
     @Operation(summary = "成绩排行（按试卷）")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     @GetMapping("/ranking")
     public Result<Page<ScoreVO>> ranking(
             @RequestParam Long paperId,
