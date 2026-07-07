@@ -14,3 +14,7 @@
 ### 后端验证
 - 已尝试运行 `mvn test`。
 - 当前本机 Maven 使用 Java 8：项目要求 Java 17，因此后端编译被环境阻塞，需切换 `JAVA_HOME` 到 JDK 17 后再验证。
+### 前端认证模块
+- 修复接口返回 401 时只清理 `localStorage`、未同步清空 Pinia 用户状态的问题。
+- 现在统一调用 `userStore.logout()`，避免当前会话内路由守卫继续误判为已登录。
+- 验证：`npm run build` 已通过。
