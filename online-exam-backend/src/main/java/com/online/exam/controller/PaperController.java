@@ -23,6 +23,7 @@ public class PaperController {
     private final PaperService paperService;
 
     @Operation(summary = "分页查询试卷")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     @GetMapping
     public Result<Page<Paper>> page(
             @RequestParam(defaultValue = "1") int pageNum,
@@ -40,6 +41,7 @@ public class PaperController {
     }
 
     @Operation(summary = "根据ID查询试卷")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     @GetMapping("/{id}")
     public Result<Paper> get(@PathVariable Long id) {
         return Result.success(paperService.getPaperById(id));

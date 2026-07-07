@@ -115,21 +115,23 @@ const shortcuts = computed(() => {
 
 onMounted(async () => {
   try {
+    if (userStore.isStudent) {
+      const eRes = await getPublishedPapers({ pageNum: 1, pageSize: 1 })
+      examCount.value = eRes.data.total
+      paperCount.value = eRes.data.total
+      const sRes = await getMyScores({ pageNum: 1, pageSize: 1 })
+      myScoreCount.value = sRes.data.total
+      return
+    }
+
     const qRes = await getQuestionPage({ pageNum: 1, pageSize: 1 })
     questionCount.value = qRes.data.total
     const pRes = await getPaperPage({ pageNum: 1, pageSize: 1 })
     paperCount.value = pRes.data.total
-    if (userStore.isStudent) {
-      const eRes = await getPublishedPapers({ pageNum: 1, pageSize: 1 })
-      examCount.value = eRes.data.total
-      const sRes = await getMyScores({ pageNum: 1, pageSize: 1 })
-      myScoreCount.value = sRes.data.total
-    } else {
-      const eRes = await getPaperPage({ pageNum: 1, pageSize: 1, status: 1 })
-      examCount.value = eRes.data.total
-      const sRes = await getMyScores({ pageNum: 1, pageSize: 1 })
-      myScoreCount.value = sRes.data.total
-    }
+    const eRes = await getPaperPage({ pageNum: 1, pageSize: 1, status: 1 })
+    examCount.value = eRes.data.total
+    const sRes = await getMyScores({ pageNum: 1, pageSize: 1 })
+    myScoreCount.value = sRes.data.total
   } catch (e) {
     // 忽略统计错误
   }
