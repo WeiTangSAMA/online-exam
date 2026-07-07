@@ -216,12 +216,14 @@ function next() {
   if (currentIndex.value < paperInfo.questions.length - 1) currentIndex.value++
 }
 
-function startTimer() {
-  remainSeconds.value = paperInfo.duration * 60
+function startTimer(reset = true) {
+  if (timer) clearInterval(timer)
+  if (reset) remainSeconds.value = paperInfo.duration * 60
   timer = setInterval(() => {
     remainSeconds.value--
     if (remainSeconds.value <= 0) {
       clearInterval(timer)
+      timer = null
       ElMessage.warning('考试时间到，系统自动交卷')
       doSubmit(true)
     }
@@ -271,7 +273,7 @@ async function doSubmit(auto) {
     resultVisible.value = true
   } catch {
     // 恢复计时（如果不是自动交卷）
-    if (!auto) startTimer()
+    if (!auto && remainSeconds.value > 0) startTimer(false)
   }
 }
 
