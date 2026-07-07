@@ -52,11 +52,16 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(ResultCode.USER_EXIST);
         }
 
+        String role = registerDTO.getRole() == null ? "STUDENT" : registerDTO.getRole().trim().toUpperCase();
+        if (!List.of("STUDENT", "TEACHER").contains(role)) {
+            throw new BusinessException("注册角色不合法");
+        }
+
         User user = new User();
         user.setUsername(registerDTO.getUsername());
         user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
         user.setName(registerDTO.getName() != null ? registerDTO.getName() : registerDTO.getUsername());
-        user.setRole(registerDTO.getRole() != null ? registerDTO.getRole() : "STUDENT");
+        user.setRole(role);
         userMapper.insert(user);
     }
 

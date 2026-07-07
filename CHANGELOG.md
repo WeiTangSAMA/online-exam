@@ -41,3 +41,8 @@
 - 修复删除分类后题目仍保留失效 categoryId 的问题。
 - 删除分类时会先将相关题目的分类置空，再删除分类，避免题库列表出现无效分类引用。
 - 验证：使用 F:\Java\jdk17 临时设置 JAVA_HOME 后，mvn test 已通过。
+
+### 后端注册权限
+- 修复公开注册接口可通过请求体指定 ADMIN 角色的权限提升风险。
+- 注册角色现在只允许 STUDENT 或 TEACHER，空角色默认 STUDENT，非法角色会被拒绝。
+- 验证：使用 F:\Java\jdk17 临时设置 JAVA_HOME 后，mvn test 已通过。
