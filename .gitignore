@@ -9,3 +9,4 @@ target/
 maven-logs/
 dist/
 *.zip
+WORK_CONTEXT.md
