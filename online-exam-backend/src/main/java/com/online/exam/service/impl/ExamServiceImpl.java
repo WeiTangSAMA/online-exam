@@ -46,15 +46,23 @@ public class ExamServiceImpl implements ExamService {
             throw new BusinessException("试卷未发布，无法开始考试");
         }
 
-        // 检查是否已有进行中的考试
-        ExamRecord existing = examRecordMapper.selectOne(new LambdaQueryWrapper<ExamRecord>()
+        // 检查是否已有考试记录：进行中的考试可恢复，已结束的考试不可重复参加。
+        List<ExamRecord> existingRecords = examRecordMapper.selectList(new LambdaQueryWrapper<ExamRecord>()
                 .eq(ExamRecord::getUserId, userId)
                 .eq(ExamRecord::getPaperId, paperId)
-                .eq(ExamRecord::getStatus, 0));
-        if (existing != null) {
-            return existing.getId();
+                .orderByDesc(ExamRecord::getStartTime));
+        ExamRecord runningRecord = null;
+        for (ExamRecord existing : existingRecords) {
+            if (existing.getStatus() == 1 || existing.getStatus() == 2) {
+                throw new BusinessException(ResultCode.EXAM_ALREADY_SUBMITTED);
+            }
+            if (existing.getStatus() == 0 && runningRecord == null) {
+                runningRecord = existing;
+            }
         }
-
+        if (runningRecord != null) {
+            return runningRecord.getId();
+        }
         ExamRecord record = new ExamRecord();
         record.setUserId(userId);
         record.setPaperId(paperId);
