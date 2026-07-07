@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "考试接口")
@@ -32,6 +33,7 @@ public class ExamController {
     }
 
     @Operation(summary = "开始考试")
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/start")
     public Result<Long> start(@RequestParam Long paperId) {
         Long recordId = examService.startExam(SecurityUtils.getCurrentUserId(), paperId);
@@ -39,6 +41,7 @@ public class ExamController {
     }
 
     @Operation(summary = "提交考试（自动评分）")
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/submit")
     public Result<Integer> submit(@Valid @RequestBody SubmitExamDTO submitExamDTO) {
         Integer score = examService.submitExam(SecurityUtils.getCurrentUserId(), submitExamDTO);
