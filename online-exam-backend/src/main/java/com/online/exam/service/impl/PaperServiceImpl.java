@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -60,19 +61,20 @@ public class PaperServiceImpl implements PaperService {
     @Override
     @Transactional
     public Long savePaper(PaperDTO paperDTO) {
+        List<Long> questionIds = validateQuestionIds(paperDTO.getQuestionIds());
         Paper paper = new Paper();
         paper.setTitle(paperDTO.getTitle());
         paper.setDuration(paperDTO.getDuration());
         paper.setPassScore(paperDTO.getPassScore() != null ? paperDTO.getPassScore() : 60);
         paper.setStatus(paperDTO.getStatus() != null ? paperDTO.getStatus() : 0);
         // 计算总分
-        int totalScore = calculateTotalScore(paperDTO.getQuestionIds());
+        int totalScore = calculateTotalScore(questionIds);
         paper.setTotalScore(totalScore);
         paperMapper.insert(paper);
 
         // 绑定题目
-        if (paperDTO.getQuestionIds() != null && !paperDTO.getQuestionIds().isEmpty()) {
-            bindQuestions(paper.getId(), paperDTO.getQuestionIds());
+        if (!questionIds.isEmpty()) {
+            bindQuestions(paper.getId(), questionIds);
         }
         return paper.getId();
     }
@@ -80,35 +82,42 @@ public class PaperServiceImpl implements PaperService {
     @Override
     @Transactional
     public void updatePaper(PaperDTO paperDTO) {
+        if (paperDTO.getId() == null) {
+            throw new BusinessException("试卷ID不能为空");
+        }
+        getPaperById(paperDTO.getId());
+        List<Long> questionIds = paperDTO.getQuestionIds() == null ? null : validateQuestionIds(paperDTO.getQuestionIds());
         Paper paper = new Paper();
         paper.setId(paperDTO.getId());
         paper.setTitle(paperDTO.getTitle());
         paper.setDuration(paperDTO.getDuration());
         paper.setPassScore(paperDTO.getPassScore());
         paper.setStatus(paperDTO.getStatus());
-        if (paperDTO.getQuestionIds() != null) {
-            paper.setTotalScore(calculateTotalScore(paperDTO.getQuestionIds()));
+        if (questionIds != null) {
+            paper.setTotalScore(calculateTotalScore(questionIds));
         }
         paperMapper.updateById(paper);
 
         // 如果传了题目，重新绑定
-        if (paperDTO.getQuestionIds() != null) {
-            bindQuestions(paperDTO.getId(), paperDTO.getQuestionIds());
+        if (questionIds != null) {
+            bindQuestions(paperDTO.getId(), questionIds);
         }
     }
 
     @Override
     @Transactional
     public void bindQuestions(Long paperId, List<Long> questionIds) {
+        Paper paper = getPaperById(paperId);
+        List<Long> validQuestionIds = validateQuestionIds(questionIds);
         paperQuestionMapper.delete(new LambdaQueryWrapper<PaperQuestion>()
                 .eq(PaperQuestion::getPaperId, paperId));
 
-        if (questionIds != null && !questionIds.isEmpty()) {
+        if (!validQuestionIds.isEmpty()) {
             List<PaperQuestion> list = new ArrayList<>();
-            for (int i = 0; i < questionIds.size(); i++) {
+            for (int i = 0; i < validQuestionIds.size(); i++) {
                 PaperQuestion pq = new PaperQuestion();
                 pq.setPaperId(paperId);
-                pq.setQuestionId(questionIds.get(i));
+                pq.setQuestionId(validQuestionIds.get(i));
                 pq.setSortOrder(i + 1);
                 list.add(pq);
             }
@@ -119,11 +128,8 @@ public class PaperServiceImpl implements PaperService {
         }
 
         // 更新试卷总分
-        Paper paper = paperMapper.selectById(paperId);
-        if (paper != null) {
-            paper.setTotalScore(calculateTotalScore(questionIds));
-            paperMapper.updateById(paper);
-        }
+        paper.setTotalScore(calculateTotalScore(validQuestionIds));
+        paperMapper.updateById(paper);
     }
 
     @Override
@@ -194,6 +200,24 @@ public class PaperServiceImpl implements PaperService {
         return vo;
     }
 
+    private List<Long> validateQuestionIds(List<Long> questionIds) {
+        if (questionIds == null || questionIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        if (questionIds.stream().anyMatch(id -> id == null)) {
+            throw new BusinessException("题目ID不能为空");
+        }
+        LinkedHashSet<Long> uniqueIds = new LinkedHashSet<>(questionIds);
+        if (uniqueIds.size() != questionIds.size()) {
+            throw new BusinessException("试卷题目不能重复");
+        }
+        List<Long> validQuestionIds = new ArrayList<>(uniqueIds);
+        List<Question> questions = questionMapper.selectBatchIds(validQuestionIds);
+        if (questions.size() != validQuestionIds.size()) {
+            throw new BusinessException("题目不存在，无法组卷");
+        }
+        return validQuestionIds;
+    }
     private int calculateTotalScore(List<Long> questionIds) {
         if (questionIds == null || questionIds.isEmpty()) {
             return 0;
