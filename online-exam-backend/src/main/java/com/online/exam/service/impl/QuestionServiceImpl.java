@@ -5,14 +5,19 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.online.exam.common.BusinessException;
 import com.online.exam.dto.QuestionDTO;
 import com.online.exam.entity.Category;
+import com.online.exam.entity.Paper;
+import com.online.exam.entity.PaperQuestion;
 import com.online.exam.entity.Question;
 import com.online.exam.mapper.CategoryMapper;
+import com.online.exam.mapper.PaperMapper;
+import com.online.exam.mapper.PaperQuestionMapper;
 import com.online.exam.mapper.QuestionMapper;
 import com.online.exam.service.QuestionService;
 import com.online.exam.vo.QuestionVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.format.DateTimeFormatter;
@@ -27,6 +32,8 @@ public class QuestionServiceImpl implements QuestionService {
 
     private final QuestionMapper questionMapper;
     private final CategoryMapper categoryMapper;
+    private final PaperQuestionMapper paperQuestionMapper;
+    private final PaperMapper paperMapper;
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -84,8 +91,22 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
+    @Transactional
     public void deleteQuestion(Long id) {
+        List<Long> affectedPaperIds = paperQuestionMapper.selectList(new LambdaQueryWrapper<PaperQuestion>()
+                        .eq(PaperQuestion::getQuestionId, id))
+                .stream()
+                .map(PaperQuestion::getPaperId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        paperQuestionMapper.delete(new LambdaQueryWrapper<PaperQuestion>()
+                .eq(PaperQuestion::getQuestionId, id));
         questionMapper.deleteById(id);
+
+        for (Long paperId : affectedPaperIds) {
+            updatePaperTotalScore(paperId);
+        }
     }
 
     @Override
@@ -103,6 +124,27 @@ public class QuestionServiceImpl implements QuestionService {
             }
         }
         return convert(question, categoryNameMap);
+    }
+
+
+    private void updatePaperTotalScore(Long paperId) {
+        List<Long> questionIds = paperQuestionMapper.selectList(new LambdaQueryWrapper<PaperQuestion>()
+                        .eq(PaperQuestion::getPaperId, paperId))
+                .stream()
+                .map(PaperQuestion::getQuestionId)
+                .collect(Collectors.toList());
+
+        int totalScore = 0;
+        if (!questionIds.isEmpty()) {
+            totalScore = questionMapper.selectBatchIds(questionIds).stream()
+                    .mapToInt(Question::getScore)
+                    .sum();
+        }
+
+        Paper paper = new Paper();
+        paper.setId(paperId);
+        paper.setTotalScore(totalScore);
+        paperMapper.updateById(paper);
     }
 
     private QuestionVO convert(Question q, Map<Long, String> categoryNameMap) {
