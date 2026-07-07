@@ -4,12 +4,18 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.online.exam.common.BusinessException;
 import com.online.exam.dto.PaperDTO;
+import com.online.exam.entity.ExamAnswer;
+import com.online.exam.entity.ExamRecord;
 import com.online.exam.entity.Paper;
 import com.online.exam.entity.PaperQuestion;
 import com.online.exam.entity.Question;
+import com.online.exam.entity.Score;
+import com.online.exam.mapper.ExamAnswerMapper;
+import com.online.exam.mapper.ExamRecordMapper;
 import com.online.exam.mapper.PaperMapper;
 import com.online.exam.mapper.PaperQuestionMapper;
 import com.online.exam.mapper.QuestionMapper;
+import com.online.exam.mapper.ScoreMapper;
 import com.online.exam.service.PaperService;
 import com.online.exam.vo.ExamPaperVO;
 import com.online.exam.vo.ExamQuestionVO;
@@ -28,6 +34,9 @@ public class PaperServiceImpl implements PaperService {
     private final PaperMapper paperMapper;
     private final PaperQuestionMapper paperQuestionMapper;
     private final QuestionMapper questionMapper;
+    private final ExamRecordMapper examRecordMapper;
+    private final ExamAnswerMapper examAnswerMapper;
+    private final ScoreMapper scoreMapper;
 
     @Override
     public Page<Paper> getPaperPage(int pageNum, int pageSize, Integer status) {
@@ -120,7 +129,17 @@ public class PaperServiceImpl implements PaperService {
     @Override
     @Transactional
     public void deletePaper(Long id) {
-        // 删除关联题目
+        List<ExamRecord> records = examRecordMapper.selectList(new LambdaQueryWrapper<ExamRecord>()
+                .eq(ExamRecord::getPaperId, id));
+        List<Long> recordIds = records.stream().map(ExamRecord::getId).collect(Collectors.toList());
+        if (!recordIds.isEmpty()) {
+            examAnswerMapper.delete(new LambdaQueryWrapper<ExamAnswer>()
+                    .in(ExamAnswer::getRecordId, recordIds));
+        }
+        scoreMapper.delete(new LambdaQueryWrapper<Score>()
+                .eq(Score::getPaperId, id));
+        examRecordMapper.delete(new LambdaQueryWrapper<ExamRecord>()
+                .eq(ExamRecord::getPaperId, id));
         paperQuestionMapper.delete(new LambdaQueryWrapper<PaperQuestion>()
                 .eq(PaperQuestion::getPaperId, id));
         paperMapper.deleteById(id);
