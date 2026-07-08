@@ -85,6 +85,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
+    @Transactional
     public void updateQuestion(QuestionDTO questionDTO) {
         if (questionDTO.getId() == null) {
             throw new BusinessException("题目ID不能为空");
@@ -96,6 +97,11 @@ public class QuestionServiceImpl implements QuestionService {
         Question question = new Question();
         BeanUtils.copyProperties(questionDTO, question);
         questionMapper.updateById(question);
+
+        List<Long> affectedPaperIds = getAffectedPaperIds(questionDTO.getId());
+        for (Long paperId : affectedPaperIds) {
+            updatePaperTotalScore(paperId);
+        }
     }
 
     @Override
@@ -107,12 +113,7 @@ public class QuestionServiceImpl implements QuestionService {
             throw new BusinessException("题目已有答题记录，无法删除");
         }
 
-        List<Long> affectedPaperIds = paperQuestionMapper.selectList(new LambdaQueryWrapper<PaperQuestion>()
-                        .eq(PaperQuestion::getQuestionId, id))
-                .stream()
-                .map(PaperQuestion::getPaperId)
-                .distinct()
-                .collect(Collectors.toList());
+        List<Long> affectedPaperIds = getAffectedPaperIds(id);
 
         paperQuestionMapper.delete(new LambdaQueryWrapper<PaperQuestion>()
                 .eq(PaperQuestion::getQuestionId, id));
@@ -141,6 +142,14 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
 
+    private List<Long> getAffectedPaperIds(Long questionId) {
+        return paperQuestionMapper.selectList(new LambdaQueryWrapper<PaperQuestion>()
+                        .eq(PaperQuestion::getQuestionId, questionId))
+                .stream()
+                .map(PaperQuestion::getPaperId)
+                .distinct()
+                .collect(Collectors.toList());
+    }
     private int normalizePageNum(int pageNum) {
         return Math.max(pageNum, 1);
     }
