@@ -51,12 +51,20 @@ public class ExamServiceImpl implements ExamService {
                 .eq(ExamRecord::getUserId, userId)
                 .eq(ExamRecord::getPaperId, paperId)
                 .orderByDesc(ExamRecord::getStartTime));
+        LocalDateTime now = LocalDateTime.now();
         ExamRecord runningRecord = null;
         for (ExamRecord existing : existingRecords) {
             if (existing.getStatus() == 1 || existing.getStatus() == 2) {
                 throw new BusinessException(ResultCode.EXAM_ALREADY_SUBMITTED);
             }
             if (existing.getStatus() == 0 && runningRecord == null) {
+                LocalDateTime deadline = existing.getStartTime().plusMinutes(paper.getDuration());
+                if (now.isAfter(deadline)) {
+                    existing.setEndTime(deadline);
+                    existing.setStatus(2);
+                    examRecordMapper.updateById(existing);
+                    throw new BusinessException(ResultCode.EXAM_TIME_OUT);
+                }
                 runningRecord = existing;
             }
         }
@@ -66,7 +74,7 @@ public class ExamServiceImpl implements ExamService {
         ExamRecord record = new ExamRecord();
         record.setUserId(userId);
         record.setPaperId(paperId);
-        record.setStartTime(LocalDateTime.now());
+        record.setStartTime(now);
         record.setStatus(0);
         examRecordMapper.insert(record);
         return record.getId();
