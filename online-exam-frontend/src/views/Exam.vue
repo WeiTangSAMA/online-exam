@@ -122,9 +122,11 @@ import { useRoute, useRouter } from 'vue-router'
 import { Back, ArrowLeft, ArrowRight, AlarmClock } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getExamPaper, startExam, submitExam } from '../api/exam'
+import { useUserStore } from '../store/user'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
 const loading = ref(true)
 const paperInfo = reactive({ id: null, title: '', totalScore: 0, duration: 60, passScore: 60, questions: [] })
@@ -151,7 +153,9 @@ const answeredCount = computed(() => {
 })
 
 // 缓存 key（用于本地自动保存）
-const cacheKey = computed(() => `exam_cache_${paperInfo.id}`)
+const cacheOwner = computed(() => userStore.userInfo?.userId || userStore.userInfo?.username || 'anonymous')
+const cacheKey = computed(() => paperInfo.id ? `exam_cache_${cacheOwner.value}_${paperInfo.id}` : '')
+const legacyCacheKey = computed(() => paperInfo.id ? `exam_cache_${paperInfo.id}` : '')
 
 function typeText(type) {
   return { SINGLE: '单选题', MULTIPLE: '多选题', JUDGE: '判断题' }[type] || ''
@@ -187,6 +191,7 @@ watch([answers, multiAnswers], () => {
 }, { deep: true })
 
 function saveCache() {
+  if (!cacheKey.value) return
   const data = {
     answers: { ...answers },
     multiAnswers: { ...multiAnswers }
@@ -195,6 +200,7 @@ function saveCache() {
 }
 
 function loadCache() {
+  if (!cacheKey.value) return
   try {
     const data = JSON.parse(localStorage.getItem(cacheKey.value) || '{}')
     if (data.answers) Object.assign(answers, data.answers)
@@ -203,7 +209,8 @@ function loadCache() {
 }
 
 function clearCache() {
-  localStorage.removeItem(cacheKey.value)
+  if (cacheKey.value) localStorage.removeItem(cacheKey.value)
+  if (legacyCacheKey.value) localStorage.removeItem(legacyCacheKey.value)
 }
 
 function goTo(idx) {
