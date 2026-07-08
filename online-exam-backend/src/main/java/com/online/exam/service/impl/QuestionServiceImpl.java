@@ -78,6 +78,7 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public void addQuestion(QuestionDTO questionDTO) {
+        validateQuestion(questionDTO);
         Question question = new Question();
         BeanUtils.copyProperties(questionDTO, question);
         questionMapper.insert(question);
@@ -88,6 +89,10 @@ public class QuestionServiceImpl implements QuestionService {
         if (questionDTO.getId() == null) {
             throw new BusinessException("题目ID不能为空");
         }
+        if (questionMapper.selectById(questionDTO.getId()) == null) {
+            throw new BusinessException("题目不存在");
+        }
+        validateQuestion(questionDTO);
         Question question = new Question();
         BeanUtils.copyProperties(questionDTO, question);
         questionMapper.updateById(question);
@@ -136,6 +141,14 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
 
+    private void validateQuestion(QuestionDTO questionDTO) {
+        if (questionDTO.getScore() == null || questionDTO.getScore() <= 0) {
+            throw new BusinessException("题目分值必须大于0");
+        }
+        if (!List.of("SINGLE", "MULTIPLE", "JUDGE").contains(questionDTO.getType())) {
+            throw new BusinessException("题型不合法");
+        }
+    }
     private void updatePaperTotalScore(Long paperId) {
         List<Long> questionIds = paperQuestionMapper.selectList(new LambdaQueryWrapper<PaperQuestion>()
                         .eq(PaperQuestion::getPaperId, paperId))

@@ -62,6 +62,7 @@ public class PaperServiceImpl implements PaperService {
     @Transactional
     public Long savePaper(PaperDTO paperDTO) {
         List<Long> questionIds = validateQuestionIds(paperDTO.getQuestionIds());
+        validatePaper(paperDTO, questionIds);
         Paper paper = new Paper();
         paper.setTitle(paperDTO.getTitle());
         paper.setDuration(paperDTO.getDuration());
@@ -87,6 +88,10 @@ public class PaperServiceImpl implements PaperService {
         }
         getPaperById(paperDTO.getId());
         List<Long> questionIds = paperDTO.getQuestionIds() == null ? null : validateQuestionIds(paperDTO.getQuestionIds());
+        validatePaper(paperDTO, questionIds);
+        if (Integer.valueOf(1).equals(paperDTO.getStatus()) && questionIds == null && !hasQuestions(paperDTO.getId())) {
+            throw new BusinessException("试卷至少包含一道题目后才能发布");
+        }
         Paper paper = new Paper();
         paper.setId(paperDTO.getId());
         paper.setTitle(paperDTO.getTitle());
@@ -153,6 +158,10 @@ public class PaperServiceImpl implements PaperService {
 
     @Override
     public void publishPaper(Long id) {
+        getPaperById(id);
+        if (!hasQuestions(id)) {
+            throw new BusinessException("试卷至少包含一道题目后才能发布");
+        }
         Paper paper = new Paper();
         paper.setId(id);
         paper.setStatus(1);
@@ -200,6 +209,26 @@ public class PaperServiceImpl implements PaperService {
         return vo;
     }
 
+    private void validatePaper(PaperDTO paperDTO, List<Long> questionIds) {
+        if (paperDTO.getDuration() == null || paperDTO.getDuration() <= 0) {
+            throw new BusinessException("考试时长必须大于0");
+        }
+        if (paperDTO.getPassScore() != null && paperDTO.getPassScore() < 0) {
+            throw new BusinessException("及格分不能为负数");
+        }
+        Integer status = paperDTO.getStatus();
+        if (status != null && status != 0 && status != 1) {
+            throw new BusinessException("试卷状态不合法");
+        }
+        if (Integer.valueOf(1).equals(status) && (questionIds == null || questionIds.isEmpty())) {
+            throw new BusinessException("试卷至少包含一道题目后才能发布");
+        }
+    }
+
+    private boolean hasQuestions(Long paperId) {
+        return paperQuestionMapper.selectCount(new LambdaQueryWrapper<PaperQuestion>()
+                .eq(PaperQuestion::getPaperId, paperId)) > 0;
+    }
     private List<Long> validateQuestionIds(List<Long> questionIds) {
         if (questionIds == null || questionIds.isEmpty()) {
             return new ArrayList<>();
