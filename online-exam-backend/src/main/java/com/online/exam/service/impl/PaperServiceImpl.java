@@ -220,7 +220,7 @@ public class PaperServiceImpl implements PaperService {
         if (status != null && status != 0 && status != 1) {
             throw new BusinessException("试卷状态不合法");
         }
-        if (Integer.valueOf(1).equals(status) && (questionIds == null || questionIds.isEmpty())) {
+        if (Integer.valueOf(1).equals(status) && questionIds != null && questionIds.isEmpty()) {
             throw new BusinessException("试卷至少包含一道题目后才能发布");
         }
     }
