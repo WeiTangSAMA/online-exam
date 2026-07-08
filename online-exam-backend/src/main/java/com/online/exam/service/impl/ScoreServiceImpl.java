@@ -54,8 +54,18 @@ public class ScoreServiceImpl implements ScoreService {
         return queryAndConvert(pageNum, pageSize, wrapper);
     }
 
+    private int normalizePageNum(int pageNum) {
+        return Math.max(pageNum, 1);
+    }
+
+    private int normalizePageSize(int pageSize) {
+        if (pageSize < 1) {
+            return 10;
+        }
+        return Math.min(pageSize, 100);
+    }
     private Page<ScoreVO> queryAndConvert(int pageNum, int pageSize, LambdaQueryWrapper<Score> wrapper) {
-        Page<Score> page = scoreMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
+        Page<Score> page = scoreMapper.selectPage(new Page<>(normalizePageNum(pageNum), normalizePageSize(pageSize)), wrapper);
 
         // 批量查询用户和试卷信息
         List<Long> userIds = page.getRecords().stream().map(Score::getUserId).distinct().collect(Collectors.toList());

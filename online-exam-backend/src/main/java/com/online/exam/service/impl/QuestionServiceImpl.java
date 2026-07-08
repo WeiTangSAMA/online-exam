@@ -54,7 +54,7 @@ public class QuestionServiceImpl implements QuestionService {
         }
         wrapper.orderByDesc(Question::getCreateTime);
 
-        Page<Question> page = questionMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
+        Page<Question> page = questionMapper.selectPage(new Page<>(normalizePageNum(pageNum), normalizePageSize(pageSize)), wrapper);
 
         // 批量查询分类名
         List<Long> categoryIds = page.getRecords().stream()
@@ -141,6 +141,16 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
 
+    private int normalizePageNum(int pageNum) {
+        return Math.max(pageNum, 1);
+    }
+
+    private int normalizePageSize(int pageSize) {
+        if (pageSize < 1) {
+            return 10;
+        }
+        return Math.min(pageSize, 100);
+    }
     private void validateQuestion(QuestionDTO questionDTO) {
         if (questionDTO.getScore() == null || questionDTO.getScore() <= 0) {
             throw new BusinessException("题目分值必须大于0");

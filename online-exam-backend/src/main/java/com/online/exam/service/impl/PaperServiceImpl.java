@@ -46,7 +46,7 @@ public class PaperServiceImpl implements PaperService {
             wrapper.eq(Paper::getStatus, status);
         }
         wrapper.orderByDesc(Paper::getCreateTime);
-        return paperMapper.selectPage(new Page<>(pageNum, pageSize), wrapper);
+        return paperMapper.selectPage(new Page<>(normalizePageNum(pageNum), normalizePageSize(pageSize)), wrapper);
     }
 
     @Override
@@ -209,6 +209,16 @@ public class PaperServiceImpl implements PaperService {
         return vo;
     }
 
+    private int normalizePageNum(int pageNum) {
+        return Math.max(pageNum, 1);
+    }
+
+    private int normalizePageSize(int pageSize) {
+        if (pageSize < 1) {
+            return 10;
+        }
+        return Math.min(pageSize, 100);
+    }
     private void validatePaper(PaperDTO paperDTO, List<Long> questionIds) {
         if (paperDTO.getDuration() == null || paperDTO.getDuration() <= 0) {
             throw new BusinessException("考试时长必须大于0");
