@@ -279,20 +279,35 @@ async function handleSubmit() {
 
     // 校验选项
     if (form.type === 'SINGLE' || form.type === 'MULTIPLE') {
-      const validOpts = options.value.filter(o => o.text.trim())
-      if (validOpts.length < 2) {
+      const optionTexts = options.value.map(o => o.text.trim())
+      if (optionTexts.length < 2) {
         ElMessage.warning('请至少填写2个选项')
         return
       }
-      form.options = JSON.stringify(validOpts.map((o, i) => String.fromCharCode(65 + i) + '. ' + o.text.trim()))
-      // 重新计算多选答案
+      if (optionTexts.some(text => !text)) {
+        ElMessage.warning('请填写所有选项，或删除空选项')
+        return
+      }
+
+      const optionLabels = optionTexts.map((_, i) => String.fromCharCode(65 + i))
+      if (form.type === 'SINGLE' && !optionLabels.includes(form.answer)) {
+        ElMessage.warning('请选择当前选项中的正确答案')
+        return
+      }
       if (form.type === 'MULTIPLE') {
-        form.answer = multiAnswer.value.slice().sort().join(',')
-        if (!form.answer) {
+        const selectedAnswers = multiAnswer.value.slice().sort()
+        if (!selectedAnswers.length) {
           ElMessage.warning('请选择正确答案')
           return
         }
+        if (selectedAnswers.some(answer => !optionLabels.includes(answer))) {
+          ElMessage.warning('多选答案必须来自当前选项')
+          return
+        }
+        form.answer = selectedAnswers.join(',')
       }
+
+      form.options = JSON.stringify(optionTexts.map((text, i) => String.fromCharCode(65 + i) + '. ' + text))
     } else {
       form.options = null
     }
