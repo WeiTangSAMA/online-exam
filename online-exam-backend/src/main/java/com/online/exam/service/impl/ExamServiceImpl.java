@@ -110,6 +110,7 @@ public class ExamServiceImpl implements ExamService {
                         .eq(PaperQuestion::getPaperId, paper.getId())
                         .orderByAsc(PaperQuestion::getSortOrder));
         List<Long> questionIds = pqs.stream().map(PaperQuestion::getQuestionId).collect(Collectors.toList());
+        Set<Long> paperQuestionIds = new HashSet<>(questionIds);
         List<Question> questions = questionMapper.selectBatchIds(questionIds);
         Map<Long, Question> questionMap = questions.stream().collect(Collectors.toMap(Question::getId, q -> q));
 
@@ -117,6 +118,18 @@ public class ExamServiceImpl implements ExamService {
         Map<Long, String> userAnswerMap = new HashMap<>();
         if (submitExamDTO.getAnswers() != null) {
             for (ExamAnswerDTO answer : submitExamDTO.getAnswers()) {
+                if (answer == null) {
+                    throw new BusinessException("提交答案不能为空");
+                }
+                if (answer.getQuestionId() == null) {
+                    throw new BusinessException("提交答案的题目ID不能为空");
+                }
+                if (!paperQuestionIds.contains(answer.getQuestionId())) {
+                    throw new BusinessException("提交答案包含非本试卷题目");
+                }
+                if (userAnswerMap.containsKey(answer.getQuestionId())) {
+                    throw new BusinessException("提交答案包含重复题目");
+                }
                 userAnswerMap.put(answer.getQuestionId(), answer.getUserAnswer());
             }
         }
