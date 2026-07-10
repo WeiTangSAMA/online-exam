@@ -10,30 +10,26 @@
     </div>
 
     <!-- 数据统计卡片 -->
-    <el-row :gutter="20" class="stat-row">
-      <el-col :span="6" v-for="item in statCards" :key="item.label">
-        <div class="stat-card card-box" :style="{ background: item.bg }">
-          <div class="stat-icon">{{ item.icon }}</div>
-          <div class="stat-info">
-            <div class="stat-value">{{ item.value }}</div>
-            <div class="stat-label">{{ item.label }}</div>
-          </div>
+    <div class="stat-grid">
+      <div v-for="item in statCards" :key="item.label" class="stat-card card-box" :style="{ background: item.bg }">
+        <div class="stat-icon">{{ item.icon }}</div>
+        <div class="stat-info">
+          <div class="stat-value">{{ item.value }}</div>
+          <div class="stat-label">{{ item.label }}</div>
         </div>
-      </el-col>
-    </el-row>
+      </div>
+    </div>
 
     <!-- 快捷入口 -->
     <div class="card-box quick-box">
       <h3 class="section-title">快捷入口</h3>
-      <el-row :gutter="16">
-        <el-col :span="6" v-for="shortcut in shortcuts" :key="shortcut.title">
-          <div class="shortcut-item" @click="router.push(shortcut.path)">
-            <div class="shortcut-icon" :style="{ background: shortcut.color }">{{ shortcut.icon }}</div>
-            <div class="shortcut-title">{{ shortcut.title }}</div>
-            <div class="shortcut-desc">{{ shortcut.desc }}</div>
-          </div>
-        </el-col>
-      </el-row>
+      <div class="shortcut-grid">
+        <div v-for="shortcut in shortcuts" :key="shortcut.title" class="shortcut-item" @click="router.push(shortcut.path)">
+          <div class="shortcut-icon" :style="{ background: shortcut.color }">{{ shortcut.icon }}</div>
+          <div class="shortcut-title">{{ shortcut.title }}</div>
+          <div class="shortcut-desc">{{ shortcut.desc }}</div>
+        </div>
+      </div>
     </div>
 
     <!-- 角色说明 -->
@@ -166,7 +162,10 @@ onMounted(async () => {
   opacity: 0.8;
 }
 
-.stat-row {
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 20px;
   margin-bottom: 20px;
 }
 
@@ -198,6 +197,12 @@ onMounted(async () => {
   margin-bottom: 20px;
 }
 
+.shortcut-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
 .section-title {
   font-size: 15px;
   margin-bottom: 16px;
@@ -206,6 +211,7 @@ onMounted(async () => {
 }
 
 .shortcut-item {
+  min-height: 142px;
   text-align: center;
   padding: 20px;
   border-radius: 10px;
@@ -241,5 +247,21 @@ onMounted(async () => {
 .shortcut-desc {
   font-size: 12px;
   color: #aaa;
+}
+
+@media (max-width: 720px) {
+  .welcome-card {
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .welcome-icon {
+    font-size: 42px;
+  }
+
+  .stat-grid,
+  .shortcut-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
