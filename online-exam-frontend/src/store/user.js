@@ -1,8 +1,19 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
+function readStoredUserInfo() {
+  const raw = localStorage.getItem('userInfo')
+  if (!raw) return null
+  try {
+    return JSON.parse(raw)
+  } catch (error) {
+    localStorage.removeItem('token')
+    localStorage.removeItem('userInfo')
+    return null
+  }
+}
 export const useUserStore = defineStore('user', () => {
-  const userInfo = ref(JSON.parse(localStorage.getItem('userInfo') || 'null'))
+  const userInfo = ref(readStoredUserInfo())
   const token = ref(localStorage.getItem('token') || '')
 
   const isLoggedIn = computed(() => !!token.value)
