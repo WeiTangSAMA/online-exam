@@ -7,6 +7,7 @@ import com.online.exam.dto.RegisterDTO;
 import com.online.exam.entity.User;
 import com.online.exam.mapper.UserMapper;
 import com.online.exam.security.JwtUtil;
+import com.online.exam.security.SecurityUser;
 import com.online.exam.service.AuthService;
 import com.online.exam.vo.LoginVO;
 import lombok.RequiredArgsConstructor;
@@ -33,14 +34,15 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(ResultCode.PASSWORD_ERROR);
         }
 
-        String token = jwtUtil.generateToken(user.getId(), user.getUsername(), List.of(user.getRole()));
+        String role = SecurityUser.normalizeRole(user.getRole());
+        String token = jwtUtil.generateToken(user.getId(), user.getUsername(), List.of(role));
 
         LoginVO vo = new LoginVO();
         vo.setToken(token);
         vo.setUserId(user.getId());
         vo.setUsername(user.getUsername());
         vo.setName(user.getName());
-        vo.setRole(user.getRole());
+        vo.setRole(role);
         return vo;
     }
 
@@ -52,7 +54,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(ResultCode.USER_EXIST);
         }
 
-        String role = registerDTO.getRole() == null ? "STUDENT" : registerDTO.getRole().trim().toUpperCase();
+        String role = registerDTO.getRole() == null ? "STUDENT" : SecurityUser.normalizeRole(registerDTO.getRole());
         if (!List.of("STUDENT", "TEACHER").contains(role)) {
             throw new BusinessException("注册角色不合法");
         }
@@ -76,7 +78,7 @@ public class AuthServiceImpl implements AuthService {
         vo.setUserId(user.getId());
         vo.setUsername(user.getUsername());
         vo.setName(user.getName());
-        vo.setRole(user.getRole());
+        vo.setRole(SecurityUser.normalizeRole(user.getRole()));
         return vo;
     }
 }

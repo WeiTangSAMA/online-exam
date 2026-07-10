@@ -31,7 +31,7 @@ public class ScoreController {
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     @GetMapping("/ranking")
     public Result<Page<ScoreVO>> ranking(
-            @RequestParam Long paperId,
+            @RequestParam(required = false) Long paperId,
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "10") int pageSize) {
         return Result.success(scoreService.getRanking(paperId, pageNum, pageSize));

@@ -105,6 +105,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { View, InfoFilled } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import { useUserStore } from '../store/user'
 import { getMyScores, getAllScores, getRanking } from '../api/score'
 import { getExamDetail } from '../api/exam'
@@ -168,11 +169,15 @@ async function loadPapers() {
 }
 
 async function viewDetail(row) {
+  if (!row.recordId) {
+    ElMessage.warning('该成绩缺少答题记录，无法查看详情')
+    return
+  }
   detailVisible.value = true
   detailLoading.value = true
   try {
     const res = await getExamDetail(row.recordId)
-    Object.assign(detailData, res.data)
+    Object.assign(detailData, { paperTitle: '', score: 0, totalScore: 100, answers: [] }, res.data)
   } finally {
     detailLoading.value = false
   }

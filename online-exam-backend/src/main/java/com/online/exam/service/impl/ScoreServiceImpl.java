@@ -102,7 +102,8 @@ public class ScoreServiceImpl implements ScoreService {
             Paper paper = paperMap.get(s.getPaperId());
             if (paper != null) {
                 vo.setPaperTitle(paper.getTitle());
-                vo.setPassed(s.getScore() >= paper.getPassScore());
+                int passScore = paper.getPassScore() == null ? 0 : paper.getPassScore();
+                vo.setPassed(s.getScore() != null && s.getScore() >= passScore);
             }
             vo.setRecordId(s.getRecordId());
             return vo;

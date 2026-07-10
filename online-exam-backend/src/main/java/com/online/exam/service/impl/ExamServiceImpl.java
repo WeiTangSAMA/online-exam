@@ -237,9 +237,10 @@ public class ExamServiceImpl implements ExamService {
                 avo.setAnalysis(question.getAnalysis());
             }
             avo.setUserAnswer(ea.getUserAnswer());
-            avo.setScore(ea.getScore());
-            avo.setIsCorrect(ea.getIsCorrect());
-            totalScore += ea.getScore();
+            int answerScore = ea.getScore() == null ? 0 : ea.getScore();
+            avo.setScore(answerScore);
+            avo.setIsCorrect(ea.getIsCorrect() == null ? 0 : ea.getIsCorrect());
+            totalScore += answerScore;
             answerVOs.add(avo);
         }
         vo.setScore(totalScore);

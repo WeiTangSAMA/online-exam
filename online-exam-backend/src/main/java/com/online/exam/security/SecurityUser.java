@@ -23,7 +23,18 @@ public class SecurityUser implements UserDetails {
         this.id = id;
         this.username = username;
         this.password = password;
-        this.authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+        this.authorities = List.of(new SimpleGrantedAuthority("ROLE_" + normalizeRole(role)));
+    }
+
+    public static String normalizeRole(String role) {
+        if (role == null) {
+            return "";
+        }
+        String normalized = role.trim().toUpperCase();
+        if (normalized.startsWith("ROLE_")) {
+            normalized = normalized.substring("ROLE_".length());
+        }
+        return normalized;
     }
 
     @Override
