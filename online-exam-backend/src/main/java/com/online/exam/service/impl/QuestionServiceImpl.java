@@ -1,5 +1,7 @@
 package com.online.exam.service.impl;
 
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.online.exam.common.BusinessException;
@@ -23,9 +25,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -161,13 +166,100 @@ public class QuestionServiceImpl implements QuestionService {
         return Math.min(pageSize, 100);
     }
     private void validateQuestion(QuestionDTO questionDTO) {
-        if (questionDTO.getScore() == null || questionDTO.getScore() <= 0) {
-            throw new BusinessException("题目分值必须大于0");
+        if (questionDTO.getScore() == null || questionDTO.getScore() <= 0 || questionDTO.getScore() > 100) {
+            throw new BusinessException("题目分值必须在 1 到 100 之间");
         }
-        if (!List.of("SINGLE", "MULTIPLE", "JUDGE").contains(questionDTO.getType())) {
+        String type = questionDTO.getType();
+        if (!List.of("SINGLE", "MULTIPLE", "JUDGE").contains(type)) {
             throw new BusinessException("题型不合法");
         }
+        if (!StringUtils.hasText(questionDTO.getContent())) {
+            throw new BusinessException("题目内容不能为空");
+        }
+        if (!StringUtils.hasText(questionDTO.getAnswer())) {
+            throw new BusinessException("答案不能为空");
+        }
+
+        if ("JUDGE".equals(type)) {
+            validateJudgeAnswer(questionDTO.getAnswer());
+            return;
+        }
+        validateChoiceQuestion(questionDTO);
     }
+
+    private void validateJudgeAnswer(String answer) {
+        String normalizedAnswer = answer.trim().toUpperCase();
+        if (!List.of("T", "F").contains(normalizedAnswer)) {
+            throw new BusinessException("判断题答案必须为 T 或 F");
+        }
+    }
+
+    private void validateChoiceQuestion(QuestionDTO questionDTO) {
+        List<String> options = parseChoiceOptions(questionDTO.getOptions());
+        if (options.size() < 2 || options.size() > 8) {
+            throw new BusinessException("选择题选项数量必须在 2 到 8 个之间");
+        }
+
+        Set<String> optionLabels = new LinkedHashSet<>();
+        for (String option : options) {
+            String label = extractOptionLabel(option);
+            if (!optionLabels.add(label)) {
+                throw new BusinessException("选择题选项不能重复");
+            }
+        }
+
+        if ("SINGLE".equals(questionDTO.getType())) {
+            String answer = questionDTO.getAnswer().trim().toUpperCase();
+            if (answer.contains(",") || !optionLabels.contains(answer)) {
+                throw new BusinessException("单选题答案必须是一个有效选项");
+            }
+            return;
+        }
+
+        List<String> answerParts = Arrays.stream(questionDTO.getAnswer().split(",", -1))
+                .map(answer -> answer.trim().toUpperCase())
+                .collect(Collectors.toList());
+        Set<String> answerLabels = new LinkedHashSet<>(answerParts);
+        if (answerParts.stream().anyMatch(answer -> !StringUtils.hasText(answer))
+                || answerLabels.isEmpty()
+                || answerLabels.size() != answerParts.size()) {
+            throw new BusinessException("多选题答案不能为空且不能重复");
+        }
+        if (!optionLabels.containsAll(answerLabels)) {
+            throw new BusinessException("多选题答案必须全部来自有效选项");
+        }
+    }
+
+    private List<String> parseChoiceOptions(String optionsJson) {
+        if (!StringUtils.hasText(optionsJson)) {
+            throw new BusinessException("选择题选项不能为空");
+        }
+        try {
+            List<String> options = JSON.parseArray(optionsJson, String.class);
+            if (options == null) {
+                throw new BusinessException("选择题选项格式不合法");
+            }
+            return options;
+        } catch (JSONException ex) {
+            throw new BusinessException("选择题选项格式不合法");
+        }
+    }
+
+    private String extractOptionLabel(String option) {
+        if (!StringUtils.hasText(option)) {
+            throw new BusinessException("选择题选项内容不能为空");
+        }
+        int dotIndex = option.indexOf('.');
+        if (dotIndex != 1 || option.length() <= 2 || !StringUtils.hasText(option.substring(dotIndex + 1))) {
+            throw new BusinessException("选择题选项格式不合法");
+        }
+        String label = option.substring(0, dotIndex).trim().toUpperCase();
+        if (label.length() != 1 || label.charAt(0) < 'A' || label.charAt(0) > 'H') {
+            throw new BusinessException("选择题选项标识不合法");
+        }
+        return label;
+    }
+
     private void updatePaperTotalScore(Long paperId) {
         List<Long> questionIds = paperQuestionMapper.selectList(new LambdaQueryWrapper<PaperQuestion>()
                         .eq(PaperQuestion::getPaperId, paperId))
