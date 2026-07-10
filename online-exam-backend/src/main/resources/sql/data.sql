@@ -6,11 +6,11 @@ USE online_exam;
 
 -- 用户数据 (密码: 123456)
 INSERT INTO `user` (`username`, `password`, `name`, `role`) VALUES
-('admin', '$2a$10$N.ZOn9G6/YLFixAOPMg/h.z7pCu6v2XyFDtC4q.jeeGm/TEZyj1C6', '系统管理员', 'ADMIN'),
-('teacher', '$2a$10$N.ZOn9G6/YLFixAOPMg/h.z7pCu6v2XyFDtC4q.jeeGm/TEZyj1C6', '张老师', 'TEACHER'),
-('student1', '$2a$10$N.ZOn9G6/YLFixAOPMg/h.z7pCu6v2XyFDtC4q.jeeGm/TEZyj1C6', '李同学', 'STUDENT'),
-('student2', '$2a$10$N.ZOn9G6/YLFixAOPMg/h.z7pCu6v2XyFDtC4q.jeeGm/TEZyj1C6', '王同学', 'STUDENT'),
-('student3', '$2a$10$N.ZOn9G6/YLFixAOPMg/h.z7pCu6v2XyFDtC4q.jeeGm/TEZyj1C6', '赵同学', 'STUDENT');
+('admin', '$2a$10$EUJKwxg.NW6WBkqW5PwaKeRRlh.xhyCMhVgdXrXpuc2Y.XXewrXQW', '系统管理员', 'ADMIN'),
+('teacher', '$2a$10$EUJKwxg.NW6WBkqW5PwaKeRRlh.xhyCMhVgdXrXpuc2Y.XXewrXQW', '张老师', 'TEACHER'),
+('student1', '$2a$10$EUJKwxg.NW6WBkqW5PwaKeRRlh.xhyCMhVgdXrXpuc2Y.XXewrXQW', '李同学', 'STUDENT'),
+('student2', '$2a$10$EUJKwxg.NW6WBkqW5PwaKeRRlh.xhyCMhVgdXrXpuc2Y.XXewrXQW', '王同学', 'STUDENT'),
+('student3', '$2a$10$EUJKwxg.NW6WBkqW5PwaKeRRlh.xhyCMhVgdXrXpuc2Y.XXewrXQW', '赵同学', 'STUDENT');
 
 -- 分类数据
 INSERT INTO `category` (`name`) VALUES
