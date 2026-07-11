@@ -1,164 +1,231 @@
 # 在线考试系统 (Online Examination System)
 
-基于 **Spring Boot + Vue 3** 的前后端分离在线考试系统，实现题库管理、试卷组卷、在线考试、自动评分、成绩管理与数据可视化等完整闭环。
+基于 **Spring Boot 3 + Vue 3** 的前后端分离在线考试系统，覆盖题库管理、试卷组卷、在线考试、自动评分、成绩管理与数据分析等完整考试流程。系统内置管理员、教师、学生三类角色，适合作为课程设计、毕业设计、教学管理原型或二次开发基础。
 
-## 一、技术栈
+## 项目特性
+
+- **角色权限清晰**：管理员、教师、学生三类角色，前端路由与后端接口双重控制。
+- **题库与分类管理**：支持单选题、多选题、判断题，支持分类、搜索、编辑、删除。
+- **试卷组卷发布**：可创建试卷、设置时长和及格分、绑定题目、发布考试。
+- **在线答题体验**：支持倒计时、题号导航、上一题/下一题、答案本地缓存、超时提交。
+- **自动评分与详情**：客观题提交后自动评分，可查看每题答案、得分和解析。
+- **成绩与数据分析**：支持成绩列表、排行、分布图、及格率、统计指标。
+- **界面优化**：近期已升级为更精致的产品型后台 UI，登录页、工作台、导航和全局组件样式更统一。
+
+## 技术栈
 
 | 层级 | 技术 |
-|------|------|
-| 后端 | Java 17、Spring Boot 3.2、Spring Security、JWT、MyBatis-Plus |
+| --- | --- |
+| 后端 | Java 17, Spring Boot 3.2, Spring Security, JWT, MyBatis-Plus |
 | 数据库 | MySQL 8.0 |
-| 前端 | Vue 3、Vite、Element Plus、ECharts、Pinia、Vue Router、Axios |
-| 其他 | Maven、Knife4j (接口文档) |
+| 前端 | Vue 3, Vite, Element Plus, Pinia, Vue Router, Axios, ECharts |
+| 文档 | Knife4j / OpenAPI |
+| 构建 | Maven, npm |
 
-## 二、项目结构
+## 项目结构
 
+```text
+online-exam-clone/
+├─ README.md
+├─ 使用手册.md
+├─ PRODUCT.md
+├─ CHANGELOG.md
+├─ online-exam-backend/
+│  ├─ pom.xml
+│  └─ src/main/
+│     ├─ java/com/online/exam/
+│     │  ├─ common/       # 统一响应、异常处理
+│     │  ├─ config/       # Security、CORS、MyBatis-Plus 配置
+│     │  ├─ controller/   # REST 接口
+│     │  ├─ dto/          # 请求参数对象
+│     │  ├─ entity/       # 数据库实体
+│     │  ├─ mapper/       # MyBatis-Plus Mapper
+│     │  ├─ security/     # JWT、用户认证、权限工具
+│     │  ├─ service/      # 业务逻辑
+│     │  └─ vo/           # 响应视图对象
+│     └─ resources/
+│        ├─ application.yml
+│        └─ sql/
+│           ├─ schema.sql # 建库建表脚本
+│           └─ data.sql   # 初始化数据
+└─ online-exam-frontend/
+   ├─ package.json
+   ├─ vite.config.js
+   └─ src/
+      ├─ api/             # 接口封装
+      ├─ assets/          # 全局样式
+      ├─ layout/          # 主布局
+      ├─ router/          # 路由与权限守卫
+      ├─ store/           # Pinia 状态
+      ├─ utils/           # Axios 请求拦截
+      └─ views/           # 页面模块
 ```
-E:\桌面\java\
-├── 在线考试.md                  # 需求文档
-├── README.md                    # 本说明文件
-├── online-exam-backend\         # 后端工程（Spring Boot）
-│   ├── pom.xml
-│   └── src\main\
-│       ├── java\com\online\exam\
-│       │   ├── OnlineExamApplication.java
-│       │   ├── common\          # 统一响应、异常处理
-│       │   ├── config\          # Security、CORS、MyBatis-Plus 配置
-│       │   ├── security\        # JWT 工具、过滤器、用户认证
-│       │   ├── entity\          # 8 张表实体
-│       │   ├── mapper\          # MyBatis-Plus Mapper
-│       │   ├── dto\             # 请求参数对象
-│       │   ├── vo\              # 响应视图对象
-│       │   ├── service\         # 业务逻辑（含自动评分）
-│       │   └── controller\      # 7 个 REST 控制器
-│       └── resources\
-│           ├── application.yml
-│           └── sql\
-│               ├── schema.sql   # 建表脚本
-│               └── data.sql     # 初始化数据
-└── online-exam-frontend\        # 前端工程（Vue 3）
-    ├── package.json
-    ├── vite.config.js
-    └── src\
-        ├── api\                 # 接口封装
-        ├── utils\               # axios 请求拦截
-        ├── store\               # Pinia 状态
-        ├── router\              # 路由 + 权限守卫
-        ├── layout\              # 主布局
-        ├── assets\              # 全局样式
-        └── views\               # 页面（登录/首页/题库/试卷/考试/成绩/统计）
-```
 
-## 三、环境准备
+## 环境要求
 
-### 1. 必备环境
-- **JDK 17+**（推荐 17）
-- **Maven 3.6+**
-- **MySQL 8.0**
-- **Node.js 16+**（推荐 18+）
-- **npm** 或 **pnpm**
+| 环境 | 建议版本 |
+| --- | --- |
+| JDK | 17+ |
+| Maven | 3.6+ |
+| MySQL | 8.0+ |
+| Node.js | 18+ |
+| npm | 9+ |
 
-### 2. 初始化数据库
-登录 MySQL，依次执行：
+## 快速启动
+
+### 1. 初始化数据库
+
+先确认本机 MySQL 服务已启动，然后在项目根目录执行：
 
 ```bash
-# 1. 建库 + 建表
 mysql -u root -p < online-exam-backend/src/main/resources/sql/schema.sql
-
-# 2. 导入初始数据
 mysql -u root -p < online-exam-backend/src/main/resources/sql/data.sql
 ```
 
-或使用 Navicat 等工具打开两个 SQL 文件依次执行。
+如果使用 Navicat、DataGrip 等工具，也可以依次打开并执行：
 
-### 3. 配置数据库连接
-修改 `online-exam-backend/src/main/resources/application.yml`：
+1. `online-exam-backend/src/main/resources/sql/schema.sql`
+2. `online-exam-backend/src/main/resources/sql/data.sql`
+
+### 2. 配置数据库连接
+
+打开 `online-exam-backend/src/main/resources/application.yml`，根据本机 MySQL 修改账号密码：
 
 ```yaml
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/online_exam?...
+    url: jdbc:mysql://localhost:3306/online_exam?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
     username: root
-    password: 你的MySQL密码   # ← 修改这里
+    password: 123456
 ```
 
-## 四、启动项目
+### 3. 启动后端
 
-### 1. 启动后端
 ```bash
 cd online-exam-backend
 mvn spring-boot:run
-# 后端启动在 http://localhost:8080
 ```
 
-启动成功后可访问接口文档：http://localhost:8080/doc.html
+后端默认地址：
 
-### 2. 启动前端
+- API 服务：`http://localhost:8080`
+- 接口文档：`http://localhost:8080/doc.html`
+
+### 4. 启动前端
+
 ```bash
 cd online-exam-frontend
-npm install        # 安装依赖（首次）
-npm run dev        # 启动开发服务器
-# 前端启动在 http://localhost:5173
+npm install
+npm run dev
 ```
 
-浏览器自动打开 http://localhost:5173 即可使用。
+前端默认地址：`http://localhost:5173`
 
-## 五、测试账号
+## 测试账号
 
-初始化数据已内置以下账号（**密码统一为 `123456`**）：
+初始化数据中已内置以下账号，密码均为 `123456`。
 
 | 用户名 | 角色 | 说明 |
-|--------|------|------|
-| `admin` | 管理员 | 拥有全部权限 |
-| `teacher` | 教师 | 题库/试卷/成绩/统计管理 |
-| `student1` `student2` `student3` | 学生 | 参加考试、查看成绩 |
+| --- | --- | --- |
+| `admin` | 管理员 | 拥有题库、试卷、考试、成绩、统计等完整管理权限 |
+| `teacher` | 教师 | 可管理题库、组卷发布、查看成绩与统计分析 |
+| `student1` | 学生 | 可参加考试、查看个人成绩与答题详情 |
+| `student2` | 学生 | 同上 |
+| `student3` | 学生 | 同上 |
 
-登录页提供一键填充按钮，可直接点击使用测试账号。
+登录页提供测试账号快捷填充按钮，可直接点击使用。
 
-## 六、功能说明
+## 功能模块
 
 ### 管理员 / 教师
-- **题库管理**：题目录入（单选/多选/判断）、分类管理、修改删除、按题型/分类/关键字筛选
-- **试卷管理**：创建试卷、设置时长与及格分、组卷（多选题目）、发布试卷
-- **成绩管理**：查看全部成绩、成绩排行榜
-- **数据分析**：成绩分布柱状图、及格率饼图、平均分/最高分/最低分统计、TOP10 排行榜
+
+- **工作台**：查看题目、试卷、发布考试、成绩记录等概览数据。
+- **题库管理**：新增、编辑、删除题目；维护分类；按题型、分类、关键字筛选。
+- **试卷管理**：创建试卷、编辑基础信息、组卷、发布、删除。
+- **成绩管理**：查看全部成绩、按试卷筛选、查看排行榜和答题详情。
+- **数据分析**：查看成绩分布、及格率、平均分、最高分、最低分、TOP10 排行。
 
 ### 学生
-- **在线考试**：查看可参加考试、答题界面（倒计时、题号导航、上一题/下一题）、答案本地缓存
-- **成绩查询**：查看历次成绩、点击查看答题详情（含正确答案与解析）
 
-### 核心特性
-- ✅ **JWT 认证**：无状态登录，Token 24 小时有效
-- ✅ **RBAC 权限**：管理员/教师/学生三种角色，接口级与页面级双重控制
-- ✅ **自动评分**：提交即判分（单选直接比对、多选排序后比对、判断题字符比对）
-- ✅ **超时校验**：前端倒计时 + 后端二次校验考试时长
-- ✅ **答题缓存**：考试过程答案实时保存到 localStorage，防止刷新丢失
-- ✅ **数据可视化**：ECharts 实现成绩分布、及格率统计
+- **工作台**：查看可参加考试、已考次数、快捷入口。
+- **在线考试**：进入已发布试卷，完成答题并提交。
+- **成绩管理**：查看个人考试记录、得分、是否及格、每题答案与解析。
 
-## 七、数据库表说明
+## 核心接口说明
+
+所有业务接口默认以 `/api` 为前缀，前端通过 Vite 代理到后端 `http://localhost:8080`。
+
+| 模块 | 主要路径 | 说明 |
+| --- | --- | --- |
+| 认证 | `/api/auth/login`, `/api/auth/register` | 登录、注册 |
+| 题库 | `/api/question`, `/api/category` | 题目与分类管理 |
+| 试卷 | `/api/paper`, `/api/paper/published` | 试卷管理、学生可见试卷 |
+| 考试 | `/api/exam/start`, `/api/exam/submit`, `/api/exam/detail/{recordId}` | 开始考试、提交、答题详情 |
+| 成绩 | `/api/score/mine`, `/api/score/all`, `/api/score/ranking` | 我的成绩、全部成绩、排行 |
+| 统计 | `/api/stats` | 成绩统计与图表数据 |
+
+## 数据表概览
 
 | 表名 | 说明 |
-|------|------|
-| `user` | 用户（含角色） |
+| --- | --- |
+| `user` | 用户与角色 |
 | `category` | 题目分类 |
-| `question` | 题目（选项存 JSON） |
-| `paper` | 试卷 |
-| `paper_question` | 试卷-题目关联（组卷） |
-| `exam_record` | 考试记录（开始/结束时间、状态） |
-| `exam_answer` | 答题明细（支撑答题详情查看） |
-| `score` | 成绩 |
+| `question` | 题目、选项、答案、解析、分值 |
+| `paper` | 试卷基础信息 |
+| `paper_question` | 试卷与题目关联 |
+| `exam_record` | 考试记录、开始和结束时间、状态 |
+| `exam_answer` | 每题作答记录、得分、是否正确 |
+| `score` | 成绩汇总记录 |
 
-## 八、常见问题
+## 验证命令
 
-**Q: 后端启动报数据库连接失败？**
-A: 检查 `application.yml` 中数据库地址、用户名、密码是否正确，确认 MySQL 服务已启动。
+后端编译 / 测试：
 
-**Q: 前端登录提示"网络异常"？**
-A: 确认后端已启动（8080 端口），前端通过 Vite 代理 `/api` 到后端。
+```bash
+cd online-exam-backend
+mvn test
+```
 
-**Q: 想修改 JWT 密钥？**
-A: 修改 `application.yml` 中 `jwt.secret`（需≥64字符）。
+前端生产构建：
 
----
+```bash
+cd online-exam-frontend
+npm run build
+```
 
-> 本系统适用于课程设计与毕业设计展示，结构清晰，功能完整，具有较强的实用性与扩展性。
+说明：当前前端构建可能会出现 Element Plus / ECharts 分包较大的提示，这是依赖体积警告，不影响运行。
+
+## 常见问题
+
+### 1. 登录提示“密码错误”怎么办？
+
+确认数据库中的初始化账号密码哈希是否是最新版。如果数据库是在密码修复前导入的，可重新导入 `data.sql`，或执行以下 SQL：
+
+```sql
+USE online_exam;
+
+UPDATE `user`
+SET `password` = '$2a$10$EUJKwxg.NW6WBkqW5PwaKeRRlh.xhyCMhVgdXrXpuc2Y.XXewrXQW'
+WHERE `username` IN ('admin', 'teacher', 'student1', 'student2', 'student3');
+```
+
+### 2. 前端提示“网络异常”怎么办？
+
+检查后端是否已启动在 `http://localhost:8080`，并确认前端 `vite.config.js` 中 `/api` 代理地址正确。
+
+### 3. 后端启动失败，提示数据库连接错误怎么办？
+
+检查：
+
+- MySQL 服务是否启动。
+- `online_exam` 数据库是否已创建。
+- `application.yml` 中的数据库账号密码是否正确。
+- MySQL 端口是否为 `3306`。
+
+### 4. 管理员/教师提示“无权限”怎么办？
+
+请重新登录以刷新 JWT。如果数据库里角色值被手动修改过，确保 `user.role` 为 `ADMIN`、`TEACHER` 或 `STUDENT`。
+
+## 版本记录
+
+详细优化记录见 [CHANGELOG.md](CHANGELOG.md)。
