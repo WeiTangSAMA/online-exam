@@ -229,11 +229,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .section-title {
-  font-size: 15px;
   margin-bottom: 16px;
-  padding-left: 12px;
-  border-left: 3px solid #2c2c2c;
-  color: #1a1a1a;
 }
 .stat-mini {
   border-radius: 12px;

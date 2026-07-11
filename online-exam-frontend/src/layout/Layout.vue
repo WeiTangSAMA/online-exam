@@ -1,19 +1,21 @@
 <template>
   <el-container class="layout-container">
-    <!-- 侧边栏 -->
-    <el-aside :width="isCollapse ? '64px' : '220px'" class="sidebar">
-      <div class="logo-box">
-        <span class="logo-icon">📚</span>
-        <span v-show="!isCollapse" class="logo-text">在线考试系统</span>
+    <el-aside :width="isCollapse ? '72px' : '248px'" class="sidebar">
+      <div class="logo-box" :class="{ collapsed: isCollapse }">
+        <div class="logo-mark">
+          <el-icon><Reading /></el-icon>
+        </div>
+        <div v-show="!isCollapse" class="logo-copy">
+          <span class="logo-text">在线考试系统</span>
+          <span class="logo-subtitle">Exam Workspace</span>
+        </div>
       </div>
+
       <el-menu
         :default-active="activeMenu"
         :collapse="isCollapse"
         :collapse-transition="false"
         router
-        background-color="#001529"
-        text-color="#ffffffb3"
-        active-text-color="#fff"
         class="sidebar-menu"
       >
         <template v-for="route in menuRoutes" :key="route.path">
@@ -25,27 +27,36 @@
       </el-menu>
     </el-aside>
 
-    <el-container>
-      <!-- 顶栏 -->
+    <el-container class="workspace">
       <el-header class="header">
         <div class="header-left">
-          <el-icon class="collapse-btn" @click="isCollapse = !isCollapse">
-            <Fold v-if="!isCollapse" />
-            <Expand v-else />
-          </el-icon>
-          <el-breadcrumb separator="/">
-            <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-            <el-breadcrumb-item>{{ currentTitle }}</el-breadcrumb-item>
-          </el-breadcrumb>
+          <el-button class="collapse-btn" text circle @click="isCollapse = !isCollapse">
+            <el-icon>
+              <Fold v-if="!isCollapse" />
+              <Expand v-else />
+            </el-icon>
+          </el-button>
+          <div class="route-heading">
+            <el-breadcrumb separator="/">
+              <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+              <el-breadcrumb-item>{{ currentTitle }}</el-breadcrumb-item>
+            </el-breadcrumb>
+            <h1>{{ currentTitle || '工作台' }}</h1>
+          </div>
         </div>
+
         <div class="header-right">
+          <div class="role-pill">
+            <span class="role-dot" />
+            {{ roleText }}
+          </div>
           <el-dropdown @command="handleCommand">
             <span class="user-info">
-              <el-avatar :size="32" class="user-avatar">
+              <el-avatar :size="34" class="user-avatar">
                 {{ userStore.userInfo?.name?.charAt(0) || 'U' }}
               </el-avatar>
               <span class="user-name">{{ userStore.userInfo?.name }}</span>
-              <el-tag size="small" :type="roleTagType" effect="light">{{ roleText }}</el-tag>
+              <el-icon class="chevron"><ArrowDown /></el-icon>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
@@ -58,7 +69,6 @@
         </div>
       </el-header>
 
-      <!-- 内容区 -->
       <el-main class="main-content">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
@@ -82,7 +92,6 @@ const userStore = useUserStore()
 
 const isCollapse = ref(false)
 
-// 从路由配置中过滤出当前角色可见的菜单
 const menuRoutes = computed(() => {
   const rootRoute = router.options.routes.find(r => r.path === '/')
   if (!rootRoute || !rootRoute.children) return []
@@ -100,11 +109,6 @@ const currentTitle = computed(() => route.meta.title || '')
 
 const roleText = computed(() => {
   const map = { ADMIN: '管理员', TEACHER: '教师', STUDENT: '学生' }
-  return map[userStore.role] || ''
-})
-
-const roleTagType = computed(() => {
-  const map = { ADMIN: 'danger', TEACHER: 'success', STUDENT: 'warning' }
   return map[userStore.role] || ''
 })
 
@@ -126,109 +130,219 @@ function handleCommand(command) {
 <style scoped>
 .layout-container {
   height: 100vh;
+  background: var(--bg-color);
 }
 
 .sidebar {
-  background: #fafafa;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  background: #111827;
+  transition: width 0.24s ease;
   overflow: hidden;
-  border-right: 1px solid #eee;
+  box-shadow: 8px 0 26px rgba(17, 24, 39, 0.12);
+}
+
+.sidebar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(52, 84, 209, 0.18), transparent 42%);
 }
 
 .logo-box {
-  height: 62px;
+  position: relative;
+  z-index: 1;
+  height: 76px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  color: #1a1a1a;
-  border-bottom: 1px solid #eee;
+  gap: 12px;
+  padding: 0 18px;
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.logo-icon {
-  font-size: 22px;
+.logo-box.collapsed {
+  justify-content: center;
+  padding: 0;
+}
+
+.logo-mark {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: #fff;
+  background: var(--primary-color);
+  box-shadow: 0 8px 18px rgba(52, 84, 209, 0.28);
+  flex: 0 0 auto;
+}
+
+.logo-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .logo-text {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.2;
   white-space: nowrap;
-  letter-spacing: 1px;
+}
+
+.logo-subtitle {
+  margin-top: 3px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.56);
+  letter-spacing: 0.04em;
 }
 
 .sidebar-menu {
+  position: relative;
+  z-index: 1;
   border-right: none;
-  --el-menu-bg-color: #fafafa;
-  --el-menu-text-color: #888;
-  --el-menu-active-color: #1a1a1a;
-  --el-menu-hover-bg-color: #f0f0f0;
+  padding: 14px 10px;
+  background: transparent;
+  --el-menu-bg-color: transparent;
+  --el-menu-text-color: rgba(255, 255, 255, 0.68);
+  --el-menu-active-color: #fff;
+  --el-menu-hover-bg-color: rgba(255, 255, 255, 0.08);
   --el-menu-item-font-size: 14px;
 }
 
 .sidebar-menu:not(.el-menu--collapse) {
-  width: 220px;
+  width: 248px;
+}
+
+.sidebar-menu :deep(.el-menu-item) {
+  height: 44px;
+  margin: 4px 0;
+  border-radius: 8px;
+  font-weight: 650;
+}
+
+.sidebar-menu :deep(.el-menu-item.is-active) {
+  background: rgba(52, 84, 209, 0.95);
+  box-shadow: 0 8px 18px rgba(52, 84, 209, 0.24);
+}
+
+.workspace {
+  min-width: 0;
 }
 
 .header {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
+  height: 76px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-  padding: 0 24px;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 0 26px;
+  border-bottom: 1px solid var(--border-lighter);
+  box-shadow: var(--shadow-sm);
 }
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.collapse-btn {
-  font-size: 20px;
-  cursor: pointer;
-  color: #999;
-  transition: color 0.2s;
-}
-.collapse-btn:hover {
-  color: #1a1a1a;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-}
-
+.header-left,
+.header-right,
 .user-info {
   display: flex;
   align-items: center;
+}
+
+.header-left {
+  gap: 14px;
+  min-width: 0;
+}
+
+.collapse-btn {
+  color: var(--text-secondary);
+  background: #f5f7fb;
+}
+
+.route-heading {
+  min-width: 0;
+}
+
+.route-heading h1 {
+  margin-top: 4px;
+  font-size: 20px;
+  line-height: 1.1;
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.header-right {
+  gap: 12px;
+}
+
+.role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  color: var(--primary-dark);
+  background: var(--primary-light);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.role-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent-color);
+}
+
+.user-info {
   gap: 10px;
   cursor: pointer;
-  padding: 6px 12px;
+  padding: 6px 10px;
   border-radius: 8px;
-  transition: background 0.2s;
+  transition: background 0.18s ease;
 }
+
 .user-info:hover {
-  background: #f5f5f5;
+  background: #f3f6fb;
 }
 
 .user-avatar {
-  background-color: #2c2c2c;
+  background: #172033;
   color: #fff;
-  font-weight: 600;
+  font-weight: 750;
 }
 
 .user-name {
   font-size: 14px;
-  color: #555;
-  font-weight: 500;
+  color: var(--text-primary);
+  font-weight: 700;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  color: var(--text-secondary);
 }
 
 .main-content {
-  background-color: #f4f5f7;
-  padding: 20px;
+  background: var(--bg-color);
+  padding: 0;
   overflow-y: auto;
+}
+
+@media (max-width: 860px) {
+  .header {
+    padding: 0 16px;
+  }
+
+  .route-heading h1,
+  .role-pill,
+  .user-name {
+    display: none;
+  }
 }
 </style>

@@ -1,10 +1,48 @@
 <template>
   <div class="login-container">
-    <div class="login-card">
+    <section class="login-showcase">
+      <div class="showcase-badge">
+        <el-icon><Reading /></el-icon>
+        在线考试工作台
+      </div>
+      <h1>让考试管理从组题到成绩闭环更清晰。</h1>
+      <p>面向教师、管理员和学生的考试系统，集中处理题库、试卷、答题、评分与统计分析。</p>
+
+      <div class="preview-panel">
+        <div class="preview-header">
+          <span />
+          <span />
+          <span />
+        </div>
+        <div class="preview-row strong">
+          <div>
+            <small>今日待处理</small>
+            <strong>试卷发布检查</strong>
+          </div>
+          <el-tag type="success" effect="light">进行中</el-tag>
+        </div>
+        <div class="preview-grid">
+          <div>
+            <strong>128</strong>
+            <span>题库题目</span>
+          </div>
+          <div>
+            <strong>24</strong>
+            <span>成绩记录</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="login-card">
       <div class="login-header">
-        <div class="logo">📚</div>
-        <h1 class="title">在线考试系统</h1>
-        <p class="subtitle">Online Examination System</p>
+        <div class="logo">
+          <el-icon><Reading /></el-icon>
+        </div>
+        <div>
+          <h2>在线考试系统</h2>
+          <p>登录后进入你的考试工作台</p>
+        </div>
       </div>
 
       <el-tabs v-model="activeTab" class="login-tabs" stretch>
@@ -34,7 +72,7 @@
               :loading="loading"
               @click="handleLogin"
             >
-              登 录
+              登录系统
             </el-button>
           </el-form>
         </el-tab-pane>
@@ -57,28 +95,28 @@
               </el-select>
             </el-form-item>
             <el-button type="primary" class="login-btn" :loading="loading" @click="handleRegister">
-              注 册
+              创建账号
             </el-button>
           </el-form>
         </el-tab-pane>
       </el-tabs>
 
       <div class="test-accounts">
-        <p class="tip-title">测试账号（密码均为 123456）：</p>
+        <p class="tip-title">测试账号，密码均为 123456</p>
         <div class="account-list">
-          <el-tag @click="quickFill('admin')" class="account-tag" effect="plain">管理员 admin</el-tag>
-          <el-tag @click="quickFill('teacher')" class="account-tag" type="success" effect="plain">教师 teacher</el-tag>
-          <el-tag @click="quickFill('student1')" class="account-tag" type="warning" effect="plain">学生 student1</el-tag>
+          <el-button text class="account-tag" @click="quickFill('admin')">管理员 admin</el-button>
+          <el-button text class="account-tag" @click="quickFill('teacher')">教师 teacher</el-button>
+          <el-button text class="account-tag" @click="quickFill('student1')">学生 student1</el-button>
         </div>
       </div>
-    </div>
+    </section>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { User, Lock, EditPen } from '@element-plus/icons-vue'
+import { User, Lock, EditPen, Reading } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { login, register } from '../api/auth'
 import { useUserStore } from '../store/user'
@@ -158,111 +196,232 @@ async function handleRegister() {
 <style scoped>
 .login-container {
   min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 480px;
+  align-items: stretch;
+  background: #f4f6fb;
+}
+
+.login-showcase {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 64px clamp(36px, 7vw, 96px);
+  color: #fff;
+  background: linear-gradient(135deg, #111827 0%, #20327a 58%, #0f766e 100%);
+}
+
+.showcase-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.login-showcase h1 {
+  max-width: 12em;
+  margin: 22px 0 16px;
+  font-size: 42px;
+  line-height: 1.12;
+  font-weight: 850;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+.login-showcase p {
+  max-width: 58ch;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.75;
+}
+
+.preview-panel {
+  width: min(420px, 100%);
+  margin-top: 42px;
+  padding: 18px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.preview-header {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 18px;
+}
+
+.preview-header span {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.preview-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: linear-gradient(160deg, #e8e8e8 0%, #f5f5f5 30%, #e0e0e0 70%, #f0f0f0 100%);
-  position: relative;
-  overflow: hidden;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.10);
 }
 
-.login-container::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -30%;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(180,180,180,0.15) 0%, transparent 70%);
-  border-radius: 50%;
+.preview-row small,
+.preview-grid span {
+  display: block;
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 12px;
 }
 
-.login-container::after {
-  content: '';
-  position: absolute;
-  bottom: -40%;
-  left: -20%;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(160,160,160,0.1) 0%, transparent 70%);
-  border-radius: 50%;
+.preview-row strong,
+.preview-grid strong {
+  display: block;
+  margin-top: 5px;
+  color: #fff;
+  font-size: 18px;
+}
+
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.preview-grid > div {
+  padding: 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .login-card {
-  width: 420px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  border-radius: 18px;
-  padding: 44px 38px 32px;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  position: relative;
-  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 56px;
+  background: #fff;
+  box-shadow: -12px 0 36px rgba(23, 32, 51, 0.08);
 }
 
 .login-header {
-  text-align: center;
-  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 30px;
 }
 
 .logo {
-  font-size: 44px;
-  margin-bottom: 10px;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: #fff;
+  background: var(--primary-color);
+  font-size: 22px;
 }
 
-.title {
+.login-header h2 {
   font-size: 24px;
-  color: #1a1a1a;
-  margin-bottom: 6px;
-  font-weight: 700;
-  letter-spacing: 2px;
+  color: var(--text-primary);
+  font-weight: 850;
+  line-height: 1.2;
 }
 
-.subtitle {
-  font-size: 12px;
-  color: #aaa;
-  letter-spacing: 3px;
-  text-transform: uppercase;
+.login-header p {
+  margin-top: 5px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.login-tabs {
+  width: 100%;
+}
+
+.login-tabs :deep(.el-tabs__nav-wrap::after) {
+  height: 1px;
+  background: var(--border-lighter);
 }
 
 .login-btn {
   width: 100%;
   height: 46px;
-  font-size: 15px;
-  letter-spacing: 6px;
-  margin-top: 10px;
-  border-radius: 10px;
-  font-weight: 600;
+  margin-top: 8px;
+  border-radius: 8px;
+  font-weight: 750;
 }
 
 .test-accounts {
-  margin-top: 24px;
+  margin-top: 26px;
   padding-top: 18px;
-  border-top: 1px solid #eee;
-  text-align: center;
+  border-top: 1px solid var(--border-lighter);
 }
 
 .tip-title {
-  font-size: 12px;
-  color: #bbb;
   margin-bottom: 10px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 650;
 }
 
 .account-list {
   display: flex;
-  justify-content: center;
   gap: 8px;
   flex-wrap: wrap;
 }
 
 .account-tag {
-  cursor: pointer;
-  transition: all 0.25s;
-  border-radius: 6px;
+  min-height: 30px;
+  padding: 0 10px;
+  color: var(--primary-dark);
+  background: var(--primary-light);
+  border-radius: 999px;
   font-size: 12px;
+  font-weight: 700;
 }
+
 .account-tag:hover {
-  transform: scale(1.05);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  color: var(--primary-color);
+  background: #e3e9ff;
+}
+
+@media (max-width: 980px) {
+  .login-container {
+    grid-template-columns: 1fr;
+  }
+
+  .login-showcase {
+    min-height: 42vh;
+    padding: 42px 28px;
+  }
+
+  .login-showcase h1 {
+    font-size: 32px;
+  }
+
+  .login-card {
+    padding: 34px 24px 42px;
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .login-showcase {
+    min-height: auto;
+  }
+
+  .preview-panel {
+    display: none;
+  }
+
+  .login-header {
+    align-items: flex-start;
+  }
 }
 </style>

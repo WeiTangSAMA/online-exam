@@ -87,14 +87,9 @@ onMounted(loadData)
 </script>
 
 <style scoped>
-.section-title {
-  font-size: 15px;
-  padding-left: 12px;
-  border-left: 3px solid #2c2c2c;
-}
 .paper-card {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
   margin-bottom: 20px;
